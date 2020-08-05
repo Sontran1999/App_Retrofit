@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="10dp"
+    android:layout_marginTop="9dp">
+
+    <com.google.android.material.circularreveal.cardview.CircularRevealCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:ignore="MissingConstraints">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <com.google.android.material.circularreveal.cardview.CircularRevealCardView
+                android:id="@+id/card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="250dp"
+                tools:ignore="MissingConstraints">
+
+                <ImageView
+                    android:id="@+id/img_avatar"
+                    android:layout_width="55dp"
+                    android:layout_height="55dp"
+                    />
+            </com.google.android.material.circularreveal.cardview.CircularRevealCardView>
+
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/card"
+                android:text="Name"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="24dp"
+                android:textColor="#e9446a"
+                android:textSize="20dp"
+                app:layout_constraintLeft_toRightOf="@id/card" />
+
+            <TextView
+                android:id="@+id/tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/tv_name"
+                android:text="/"
+                android:textSize="20dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintLeft_toRightOf="@id/tv_name" />
+
+            <TextView
+                android:id="@+id/tv_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/tv"
+                android:text="id"
+                android:textSize="20dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintLeft_toRightOf="@id/tv" />
+
+
+
+            <TextView
+                android:id="@+id/tv_sex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_name"
+                android:layout_marginRight="10dp"
+                android:layout_toRightOf="@+id/card"
+                android:text="Sex"
+                android:layout_marginLeft="5dp"
+                android:textSize="15dp" />
+
+
+
+
+        </RelativeLayout>
+    </com.google.android.material.circularreveal.cardview.CircularRevealCardView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
