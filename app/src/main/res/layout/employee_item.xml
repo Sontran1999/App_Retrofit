@@ -8,8 +8,10 @@
     android:layout_marginTop="9dp">
 
     <com.google.android.material.circularreveal.cardview.CircularRevealCardView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         tools:ignore="MissingConstraints">
 
         <RelativeLayout
@@ -30,21 +32,20 @@
                     android:id="@+id/img_avatar"
                     android:layout_width="55dp"
                     android:layout_height="55dp"
-                    />
+                    android:src="@drawable/noimage"/>
             </com.google.android.material.circularreveal.cardview.CircularRevealCardView>
 
             <TextView
                 android:id="@+id/tv_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="24dp"
                 android:layout_toRightOf="@+id/card"
                 android:text="Name"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="24dp"
                 android:textColor="#e9446a"
                 android:textSize="20dp"
                 app:layout_constraintLeft_toRightOf="@id/card" />
-
             <TextView
                 android:id="@+id/tv"
                 android:layout_width="wrap_content"
@@ -66,20 +67,16 @@
                 app:layout_constraintLeft_toRightOf="@id/tv" />
 
 
-
-            <TextView
-                android:id="@+id/tv_sex"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/tv_name"
+            <ImageButton
+                android:id="@+id/btn_delete"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_toRightOf="@+id/card"
-                android:text="Sex"
-                android:layout_marginLeft="5dp"
-                android:textSize="15dp" />
-
-
-
+                android:background="@drawable/ic_baseline_close_24"
+                android:textColor="#ffffff" />
 
         </RelativeLayout>
     </com.google.android.material.circularreveal.cardview.CircularRevealCardView>

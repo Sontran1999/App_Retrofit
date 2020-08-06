@@ -1,6 +1,7 @@
 package com.example.app_demo.Adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +11,9 @@ import com.example.app_retrofit.Data.Model.Data
 import com.example.app_retrofit.R
 
 
-class EmployeeListAdapter( var mContext: Context, var mData: List<Data>) :
+class EmployeeListAdapter() :
     RecyclerView.Adapter<EmployeeListAdapter.ViewHoder>(){
-
+    var mData: MutableList<Data> = arrayListOf()
     class ViewHoder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var id: TextView = itemView.findViewById(R.id.tv_id)
         var name: TextView = itemView.findViewById(R.id.tv_name)
@@ -30,13 +31,17 @@ class EmployeeListAdapter( var mContext: Context, var mData: List<Data>) :
     }
 
     override fun onBindViewHolder(holder: ViewHoder, position: Int) {
-        holder.id.text = mData[position].id.toString()
-        holder.name.text = mData[position].name
+        holder.id.text = mData.get(position).id.toString()
+        holder.name.text = mData.get(position).name
     }
-    fun setList(list: List<Data>?) {
+    fun setList(list: MutableList<Data>?) {
         if (list != null) {
             this.mData = list
         }
+        notifyDataSetChanged()
+    }
+    fun reset(){
+        mData.clear()
         notifyDataSetChanged()
     }
 }
