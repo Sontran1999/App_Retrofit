@@ -5,17 +5,27 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 
-data class Employee(
-    @SerializedName("status")
-    @Expose
-    var status: String? = null,
+//data class Employee(
+//    @SerializedName("status")
+//    @Expose
+//    var status: String? = null,
+//
+//    @SerializedName("data")
+//    @Expose
+//    var data: List<Data>? = null,
+//
+//    @SerializedName("message")
+//    @Expose
+//    var message: String? = null
+//
+//)
 
-    @SerializedName("data")
+class Employee {
+    @SerializedName("contacts")
     @Expose
-    var data: List<Data>? = null,
+    var contacts: List<Contact>? = null
 
-    @SerializedName("message")
+    @SerializedName("total_contacts")
     @Expose
-    var message: String? = null
-
-)
+    var totalContacts: Int? = null
+}

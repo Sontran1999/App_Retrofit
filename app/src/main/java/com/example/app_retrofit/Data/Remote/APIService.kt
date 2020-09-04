@@ -1,26 +1,31 @@
 package com.example.app_retrofit.Data.Remote
 
 
-import com.example.app_retrofit.Data.Model.Data
-import com.example.app_retrofit.Data.Model.Employee
+import com.example.app_retrofit.Data.Model.*
 import retrofit2.http.*
 
 interface APIService {
-    @Headers(
-        value = ["Accept: application/json",
-            "Content-type:application/json"]
-    )
-    @GET("employees/")
+    @GET("contacts/bookmark")
     fun getAll(): retrofit2.Call<Employee>
 
-
-    @POST("create/")
-    @FormUrlEncoded
+    @POST("contact")
     fun insert(
-        @Field("id") id: Int,
-        @Field("employee_name") name: String,
-        @Field("employee_salary") salary: Int,
-        @Field("employee_age") age: Int,
-        @Field("profile_image") image: String
-    ): retrofit2.Call<Data>
+        @Body employeePost: EmployeePost
+    ): retrofit2.Call<Contact>
+
+//    @Headers(
+//        value = ["Accept: application/json",
+//            "Content-type:application/json",
+//            "autopilotapikey:116553be00eb43e19c3fd63890b1b98e"]
+//    )
+//    @Multipart
+//    @PUT("update/{id}")
+//    fun update(@Part("id") id: Int,
+//               @Part("employee_name") name: String,
+//               @Part("employee_salary") salary: Int,
+//               @Part("employee_age") age: Int,
+//               @Part("profile_image") image: String): retrofit2.Call<EmployeePost>
+
+    @DELETE("contact/{id}")
+    fun delete(@Path("id") id: String?): retrofit2.Call<Unit>
 }
