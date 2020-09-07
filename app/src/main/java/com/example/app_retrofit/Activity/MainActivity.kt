@@ -53,22 +53,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     fun load() {
         val viewModel: RetrofitModel =
-            ViewModelProviders.of(this, RetrofitModel.NoteViewModelFactory(this.application))
+            ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
                 .get(RetrofitModel::class.java)
         viewModel.getListDataObserver().observe(this, Observer<Employee> {
             if (it != null) {
                 list = it.contacts as MutableList<Contact>
                 mApdaper?.setList(list!!)
                 Log.d("MainActivity", "employees loaded from API")
-                mDialog?.dismiss()
-                mApdaper?.setList(list!!)
             } else {
                 Log.d("MainActivity", "error loading from API")
                 Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
-                mDialog?.dismiss()
             }
         })
-        viewModel.getAll()
+        mDialog?.let { viewModel.getAll(it) }
+
     }
 
     private fun loadFeed() {
@@ -84,7 +82,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         if (amIConnected()) {
             mApdaper?.reset()
             load()
-
         } else {
             Toast.makeText(this, "Thiết bị chưa kết nối internet", Toast.LENGTH_SHORT).show()
             mDialog?.dismiss()

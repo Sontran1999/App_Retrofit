@@ -16,12 +16,16 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.example.app_retrofit.Data.Model.Contact
 import com.example.app_retrofit.Data.Model.ContactPost
 import com.example.app_retrofit.Data.Model.CustomPost
 import com.example.app_retrofit.Data.Model.EmployeePost
 import com.example.app_retrofit.Data.Remote.APIService
 import com.example.app_retrofit.Data.Remote.ApiUtils
+import com.example.app_retrofit.ViewModel.RetrofitModel
 import kotlinx.android.synthetic.main.activity_new_employee.*
 import retrofit2.Response
 import java.io.ByteArrayOutputStream
@@ -181,30 +185,21 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     fun insert(employeePost: EmployeePost) {
-        mService?.insert(employeePost)
-            ?.enqueue(object : retrofit2.Callback<Contact> {
-                override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
-                    Log.d("MainActivity", "error");
-                    Toast.makeText(this@NewEmployeeActivity, "save error", Toast.LENGTH_SHORT)
-                        .show()
-                }
-
-                override fun onResponse(
-                    call: retrofit2.Call<Contact>,
-                    response: Response<Contact>
-                ) {
-                    if (response.isSuccessful) {
-                        Log.d("MainActivity", "save successfully")
-                        Toast.makeText(
-                            this@NewEmployeeActivity,
-                            "save successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        finish()
-                    } else
-                        Log.d("MainActivity", response.message() + response.code())
-                }
-            })
+        val viewModel: RetrofitModel =
+            ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
+                .get(RetrofitModel::class.java)
+        viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
+            if (it != null) {
+                Log.d("MainActivity", "save successfully")
+                Toast.makeText(
+                    this@NewEmployeeActivity,
+                    "save successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        })
+        viewModel.insert(employeePost)
     }
 
 
