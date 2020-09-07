@@ -12,7 +12,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.app_demo.Adapter.EmployeeListAdapter
 import com.example.app_retrofit.Data.Model.Contact
@@ -20,20 +24,21 @@ import com.example.app_retrofit.Data.Model.Employee
 import com.example.app_retrofit.Data.Model.EmployeePost
 import com.example.app_retrofit.Data.Remote.APIService
 import com.example.app_retrofit.Data.Remote.ApiUtils
+import com.example.app_retrofit.ViewModel.RetrofitModel
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.launch
 import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
-    var mService: APIService? = null
     var mApdaper: EmployeeListAdapter? = null
-    var mDialog: ProgressDialog?= null
+    var mDialog: ProgressDialog? = null
+    var list: MutableList<Contact>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.setTitle("")
 
-        mService = ApiUtils().getAPIService()
         mApdaper = EmployeeListAdapter(this)
         recycler_employee.setHasFixedSize(true)
         recycler_employee.layoutManager = LinearLayoutManager(this)
@@ -47,22 +52,23 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     fun load() {
-        mService?.getAll()?.enqueue(object : retrofit2.Callback<Employee> {
-            override fun onFailure(call: retrofit2.Call<Employee>, t: Throwable) {
-                Log.d("MainActivity", "error loading from API");
-                Toast.makeText(this@MainActivity, "error loading from API", Toast.LENGTH_SHORT).show()
+        val viewModel: RetrofitModel =
+            ViewModelProviders.of(this, RetrofitModel.NoteViewModelFactory(this.application))
+                .get(RetrofitModel::class.java)
+        viewModel.getListDataObserver().observe(this, Observer<Employee> {
+            if (it != null) {
+                list = it.contacts as MutableList<Contact>
+                mApdaper?.setList(list!!)
+                Log.d("MainActivity", "employees loaded from API")
+                mDialog?.dismiss()
+                mApdaper?.setList(list!!)
+            } else {
+                Log.d("MainActivity", "error loading from API")
+                Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
                 mDialog?.dismiss()
             }
-
-            override fun onResponse(call: retrofit2.Call<Employee>, response: Response<Employee>) {
-                if (response.isSuccessful) {
-                    mApdaper?.setList(response.body()?.contacts as MutableList<Contact>)
-                    Log.d("MainActivity", "employees loaded from API")
-                    mDialog?.dismiss()
-                }
-            }
         })
-
+        viewModel.getAll()
     }
 
     private fun loadFeed() {
@@ -71,9 +77,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         mDialog?.setCancelable(false)
 //        mDialog?.setIndeterminate(true);
         mDialog?.setButton(
-            "Cancel",DialogInterface.OnClickListener { dialogInterface, i ->
-            dialogInterface.cancel()
-        })
+            "Cancel", DialogInterface.OnClickListener { dialogInterface, i ->
+                dialogInterface.cancel()
+            })
         mDialog?.show()
         if (amIConnected()) {
             mApdaper?.reset()
@@ -84,7 +90,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             mDialog?.dismiss()
         }
     }
-
 
 
     private fun amIConnected(): Boolean {
@@ -106,7 +111,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 //    }
 
     override fun onClick(p0: View?) {
-
         when (p0?.id) {
             R.id.btn_new -> {
                 val intent: Intent = Intent(this, NewEmployeeActivity::class.java)
@@ -115,18 +119,55 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_refresh-> {
+            R.id.menu_refresh -> {
                 loadFeed()
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        var searchItem = menu?.findItem(R.id.menu_search)
+        var searchView = searchItem?.actionView as androidx.appcompat.widget.SearchView
+        searchView.queryHint = "Enter name"
+        searchView.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                var listSearch: MutableList<Contact> = mutableListOf()
+                if (query != null) {
+                    list?.forEachIndexed { index, contact ->
+                        var name = contact.lastName.toString()
+                        if (query.toUpperCase().equals(name.toUpperCase())) {
+                            listSearch.add(contact)
+                        } else if (query.toLowerCase().equals(name.toLowerCase())) {
+                            listSearch.add(contact)
+                        }
+                    }
+                    if (listSearch.size == 0) {
+                        AlertDialog.Builder(this@MainActivity).setTitle("No information")
+                            .setMessage("The information you are looking for is not available")
+                            .setNegativeButton(
+                                "OK ",
+                                DialogInterface.OnClickListener { dialogInterface, i ->
+                                    dialogInterface.cancel()
+                                }).show()
+                    } else {
+                        mApdaper?.setList(listSearch)
+                    }
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
+        })
+        return super.onCreateOptionsMenu(menu)
     }
 
 }
