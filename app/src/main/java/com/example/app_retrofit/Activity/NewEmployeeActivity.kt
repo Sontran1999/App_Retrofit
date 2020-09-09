@@ -157,11 +157,28 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
 
 
     fun update(employeePost: EmployeePost) {
+//        val viewModel: RetrofitModel =
+//            ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
+//                .get(RetrofitModel::class.java)
+//        viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
+//            if (it != null) {
+//                Log.d("MainActivity", "update successfully")
+//                Toast.makeText(
+//                    this@NewEmployeeActivity,
+//                    "update successfully",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//                finish()
+//            }
+//        })
+//        viewModel.update(employeePost)
+
         mService?.insert(employeePost)
             ?.enqueue(object : retrofit2.Callback<Contact> {
                 override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
                     Log.d("MainActivity", "error");
                     Toast.makeText(this@NewEmployeeActivity, "update error", Toast.LENGTH_SHORT)
+//                    employeePostLiveData.postValue(null)
 
                 }
 
@@ -177,11 +194,12 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                             Toast.LENGTH_SHORT
                         ).show()
                         finish()
+//                        employeePostLiveData.postValue(employeePost)
                     } else
                         Log.d("MainActivity", response.message() + response.code())
+//                    employeePostLiveData.postValue(null)
                 }
             })
-
     }
 
     fun insert(employeePost: EmployeePost) {
@@ -197,6 +215,13 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                     Toast.LENGTH_SHORT
                 ).show()
                 finish()
+            }
+            else{
+                Toast.makeText(
+                    this@NewEmployeeActivity,
+                    "save error",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
         viewModel.insert(employeePost)

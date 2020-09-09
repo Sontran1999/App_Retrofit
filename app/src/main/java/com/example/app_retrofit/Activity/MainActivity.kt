@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 list = it.contacts as MutableList<Contact>
                 mApdaper?.setList(list!!)
                 Log.d("MainActivity", "employees loaded from API")
+                Toast.makeText(this, "employees loaded from API", Toast.LENGTH_SHORT).show()
             } else {
                 Log.d("MainActivity", "error loading from API")
                 Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
