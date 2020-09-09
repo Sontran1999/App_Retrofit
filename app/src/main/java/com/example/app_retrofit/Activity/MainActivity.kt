@@ -34,12 +34,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     var mApdaper: EmployeeListAdapter? = null
     var mDialog: ProgressDialog? = null
     var list: MutableList<Contact>? = null
+    val viewModel: RetrofitModel by lazy {
+        ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
+            .get(RetrofitModel::class.java)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.setTitle("")
 
-        mApdaper = EmployeeListAdapter(this)
+        mApdaper = EmployeeListAdapter(onItemDelete)
         recycler_employee.setHasFixedSize(true)
         recycler_employee.layoutManager = LinearLayoutManager(this)
         recycler_employee.adapter = mApdaper
@@ -51,18 +55,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         loadFeed()
     }
 
+    private val onItemDelete: (Contact) -> Unit = {
+        viewModel.contactLiveData.observe(this, Observer<Contact> {
+            if (it != null) {
+                load()
+                Toast.makeText(this, "delete successfully", Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                Toast.makeText(this, "delete error", Toast.LENGTH_SHORT).show()
+            }
+        })
+        viewModel.delete(it,this)
+    }
+
     fun load() {
-        val viewModel: RetrofitModel =
-            ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
-                .get(RetrofitModel::class.java)
         viewModel.getListDataObserver().observe(this, Observer<Employee> {
             if (it != null) {
                 list = it.contacts as MutableList<Contact>
                 mApdaper?.setList(list!!)
-                Log.d("MainActivity", "employees loaded from API")
-                Toast.makeText(this, "employees loaded from API", Toast.LENGTH_SHORT).show()
+
             } else {
-                Log.d("MainActivity", "error loading from API")
+
                 Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
             }
         })

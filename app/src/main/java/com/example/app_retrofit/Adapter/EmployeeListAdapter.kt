@@ -27,7 +27,7 @@ import com.example.app_retrofit.R
 import retrofit2.Response
 
 
-class EmployeeListAdapter(var mContext: Context) :
+class EmployeeListAdapter(private val onDelete: (Contact) -> Unit) :
     RecyclerView.Adapter<EmployeeListAdapter.ViewHoder>(){
     var mService: APIService? = ApiUtils().getAPIService()
     var mContact: MutableList<Contact> = arrayListOf()
@@ -70,7 +70,7 @@ class EmployeeListAdapter(var mContext: Context) :
             it.context.startActivity(intent)
         }
         holder.delete.setOnClickListener{
-            delete(position)
+            onDelete(mContact[position])
         }
     }
     fun setList(list: MutableList<Contact>) {
@@ -81,58 +81,6 @@ class EmployeeListAdapter(var mContext: Context) :
         mContact.clear()
         notifyDataSetChanged()
     }
-    fun delete(position: Int){
-        var alertDialog = AlertDialog.Builder(mContext)
-        alertDialog.setMessage("Are you sure you want to delete")
-        alertDialog.setPositiveButton(
-            "OK",
-            DialogInterface.OnClickListener { dialogInterface, i ->
-                mService?.delete(mContact[position].contactId)
-                    ?.enqueue(object : retrofit2.Callback<Unit> {
-                        override fun onFailure(call: retrofit2.Call<Unit>, t: Throwable) {
-                            Log.d("MainActivity", "error");
-                            Toast.makeText(mContext, "delete error", Toast.LENGTH_SHORT).show()
-                        }
-
-                        override fun onResponse(
-                            call: retrofit2.Call<Unit>,
-                            response: Response<Unit>
-                        ) {
-                            if (response.isSuccessful) {
-                                Log.d("MainActivity", "delete successfully")
-                                load()
-                                Toast.makeText(mContext, "delete successfully", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                    })
-
-            }
-        )
-        alertDialog.setNegativeButton(
-            "Cancel ",
-            DialogInterface.OnClickListener { dialogInterface, i ->
-                dialogInterface.cancel()
-            })
-
-        alertDialog.show()
-    }
-     fun load(){
-         mService?.getAll()?.enqueue(object : retrofit2.Callback<Employee> {
-             override fun onFailure(call: retrofit2.Call<Employee>, t: Throwable) {
-                 Log.d("MainActivity", "error loading from API");
-                 Toast.makeText(mContext, "error loading from API", Toast.LENGTH_SHORT).show()
-             }
-
-             override fun onResponse(call: retrofit2.Call<Employee>, response: Response<Employee>) {
-                 if (response.isSuccessful) {
-                     reset()
-                     setList(response.body()?.contacts as MutableList<Contact>)
-                     Log.d("MainActivity", "posts loaded from API")
-                 }
-             }
-         })
-     }
 
     fun stringToBitMap(encodedString: String?): Bitmap? {
         return try {

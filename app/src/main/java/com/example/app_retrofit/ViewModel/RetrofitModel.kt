@@ -3,9 +3,11 @@ package com.example.app_retrofit.ViewModel
 import android.app.Application
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.ColorSpace
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -20,11 +22,13 @@ import retrofit2.Response
 class RetrofitModel( application: Application) : ViewModel() {
     var employee: MutableLiveData<Employee>
     var employeePostLiveData: MutableLiveData<EmployeePost>
+    var contactLiveData: MutableLiveData<Contact>
     var mService: APIService? = null
 
     init {
         employee = MutableLiveData()
         employeePostLiveData = MutableLiveData()
+        contactLiveData = MutableLiveData()
         mService = ApiUtils().getAPIService()
     }
 
@@ -119,8 +123,45 @@ class RetrofitModel( application: Application) : ViewModel() {
 
     }
 
-    fun delete(){
+    fun delete(contact: Contact, context: Context) {
+        var alertDialog = AlertDialog.Builder(context)
+        alertDialog.setMessage("Are you sure you want to delete")
+        alertDialog.setPositiveButton(
+            "OK",
+            DialogInterface.OnClickListener { dialogInterface, i ->
+                mService?.delete(contact.contactId)
+                    ?.enqueue(object : retrofit2.Callback<Unit> {
+                        override fun onFailure(call: retrofit2.Call<Unit>, t: Throwable) {
+                            Log.d("MainActivity", "error");
+//                    Toast.makeText(mContext, "delete error", Toast.LENGTH_SHORT).show()
+                            contactLiveData.postValue(null)
+                        }
 
+                        override fun onResponse(
+                            call: retrofit2.Call<Unit>,
+                            response: Response<Unit>
+                        ) {
+                            if (response.isSuccessful) {
+                                Log.d("MainActivity", "delete successfully")
+                                contactLiveData.postValue(contact)
+//                        load()
+//                        Toast.makeText(mContext, "delete successfully", Toast.LENGTH_SHORT)
+//                            .show()
+                            } else {
+                                contactLiveData.postValue(null)
+                            }
+                        }
+                    })
+
+            }
+        )
+        alertDialog.setNegativeButton(
+            "Cancel ",
+            DialogInterface.OnClickListener { dialogInterface, i ->
+                dialogInterface.cancel()
+            })
+
+        alertDialog.show()
     }
 
     class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
