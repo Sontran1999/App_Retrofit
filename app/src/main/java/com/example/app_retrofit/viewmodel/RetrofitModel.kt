@@ -4,21 +4,26 @@ import android.app.Application
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 
 
 import android.graphics.ColorSpace
+import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.app_demo.Adapter.EmployeeListAdapter
 import com.example.app_retrofit.data.model.Contact
 import com.example.app_retrofit.data.model.Employee
 import com.example.app_retrofit.data.model.EmployeePost
 import com.example.app_retrofit.data.remote.APIService
 import com.example.app_retrofit.data.remote.ApiUtils
 import retrofit2.Response
+import java.io.ByteArrayOutputStream
 
 class RetrofitModel(application: Application) : ViewModel() {
     var employee: MutableLiveData<Employee>
@@ -31,11 +36,9 @@ class RetrofitModel(application: Application) : ViewModel() {
         employeePostLiveData = MutableLiveData()
         contactLiveData = MutableLiveData()
         mService = ApiUtils().getAPIService()
+
     }
 
-    fun getListDataObserver(): MutableLiveData<Employee> {
-        return employee
-    }
 
     fun getAll(mDialog: ProgressDialog, context: Context) {
         mService?.getAll()?.enqueue(object : retrofit2.Callback<Employee> {
@@ -128,6 +131,47 @@ class RetrofitModel(application: Application) : ViewModel() {
         alertDialog.show()
     }
 
+    fun search(query : String, list : MutableList<Contact>, context: Context, mApdaper : EmployeeListAdapter){
+        var listSearch: MutableList<Contact> = mutableListOf()
+        if (query != null) {
+            list?.forEachIndexed { index, contact ->
+                var name = contact.lastName.toString()
+                if (query.toUpperCase().equals(name.toUpperCase())) {
+                    listSearch.add(contact)
+                } else if (query.toLowerCase().equals(name.toLowerCase())) {
+                    listSearch.add(contact)
+                }
+            }
+            if (listSearch.size == 0) {
+                AlertDialog.Builder(context).setTitle("No information")
+                    .setMessage("The information you are looking for is not available")
+                    .setNegativeButton(
+                        "OK ",
+                        DialogInterface.OnClickListener { dialogInterface, i ->
+                            dialogInterface.cancel()
+                        }).show()
+            } else {
+                mApdaper?.setList(listSearch)
+            }
+        }
+    }
+
+    fun stringToBitMap(encodedString: String?): Bitmap? {
+        return try {
+            val encodeByte = Base64.decode(encodedString, Base64.DEFAULT)
+            BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.size)
+        } catch (e: Exception) {
+            e.message
+            null
+        }
+    }
+
+    fun bitMapToString(bitmap: Bitmap): String? {
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        val b = baos.toByteArray()
+        return Base64.encodeToString(b, Base64.DEFAULT)
+    }
     class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {

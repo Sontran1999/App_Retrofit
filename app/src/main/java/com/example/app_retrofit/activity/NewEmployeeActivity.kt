@@ -37,6 +37,7 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
         ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
             .get(RetrofitModel::class.java)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_employee)
@@ -69,20 +70,11 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                 contact.customFields?.forEachIndexed { index, customField ->
                     edt_note.setText(customField.value.toString())
                 }
-                imgPicture.setImageBitmap(stringToBitMap(contact.customFields?.get(0)?.value))
+                imgPicture.setImageBitmap(viewModel.stringToBitMap(contact.customFields?.get(0)?.value))
             }
         }
     }
 
-    fun stringToBitMap(encodedString: String?): Bitmap? {
-        return try {
-            val encodeByte = Base64.decode(encodedString, Base64.DEFAULT)
-            BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.size)
-        } catch (e: Exception) {
-            e.message
-            null
-        }
-    }
 
     private fun choosePicture() {
         val pickPhoto = Intent(
@@ -122,7 +114,7 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
         var lname = edt_lname.text.toString()
         var email = edt_email.text.toString()
         var note = edt_note.text.toString()
-        var image = bitMapToString((imgPicture.drawable as BitmapDrawable).bitmap)
+        var image = viewModel.bitMapToString((imgPicture.drawable as BitmapDrawable).bitmap)
          if (lname.equals("")) {
             Toast.makeText(this, "Không được để trống last name", Toast.LENGTH_SHORT).show()
         } else if (email.equals("")) {
@@ -139,7 +131,7 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                 alertDialog.setPositiveButton(
                     "OK",
                     DialogInterface.OnClickListener { dialogInterface, i ->
-                        update(employeePost)
+                        insertUpdate(employeePost)
                     }
                 )
                 alertDialog.setNegativeButton(
@@ -151,13 +143,13 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                 alertDialog.show()
 
             } else {
-                insert(employeePost)
+                insertUpdate(employeePost)
             }
         }
     }
 
 
-    fun update(employeePost: EmployeePost) {
+    fun insertUpdate(employeePost: EmployeePost) {
         viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
             if (it != null) {
                 finish()
@@ -166,20 +158,4 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
         viewModel.insertUpdate(employeePost, this)
     }
 
-    fun insert(employeePost: EmployeePost) {
-        viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
-            if (it != null) {
-                finish()
-            }
-        })
-        viewModel.insertUpdate(employeePost, this)
-    }
-
-
-    fun bitMapToString(bitmap: Bitmap): String? {
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(CompressFormat.PNG, 100, baos)
-        val b = baos.toByteArray()
-        return Base64.encodeToString(b, Base64.DEFAULT)
-    }
 }

@@ -35,17 +35,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.setTitle("")
-
         mApdaper = EmployeeListAdapter(onItemDelete)
         recycler_employee.setHasFixedSize(true)
         recycler_employee.layoutManager = LinearLayoutManager(this)
         recycler_employee.adapter = mApdaper
         btn_new.setOnClickListener(this)
+        replaceData()
     }
 
     override fun onResume() {
@@ -59,16 +58,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 load()
             }
         })
-        viewModel.delete(it,this)
+        viewModel.delete(it, this)
+    }
+
+    fun replaceData() {
+        viewModel.employee.observe(this, Observer<Employee> {
+            list = it.contacts as MutableList<Contact>
+            mApdaper?.setList(list!!)
+
+        })
     }
 
     fun load() {
-        viewModel.getListDataObserver().observe(this, Observer<Employee> {
-            if (it != null) {
-                list = it.contacts as MutableList<Contact>
-                mApdaper?.setList(list!!)
-            }
-        })
         mDialog?.let { viewModel.getAll(it, this) }
 
     }
@@ -139,26 +140,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         searchView.setOnQueryTextListener(object :
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                var listSearch: MutableList<Contact> = mutableListOf()
                 if (query != null) {
-                    list?.forEachIndexed { index, contact ->
-                        var name = contact.lastName.toString()
-                        if (query.toUpperCase().equals(name.toUpperCase())) {
-                            listSearch.add(contact)
-                        } else if (query.toLowerCase().equals(name.toLowerCase())) {
-                            listSearch.add(contact)
+                    list?.let {
+                        mApdaper?.let { it1 ->
+                            viewModel.search(
+                                query, it, this@MainActivity,it1
+                            )
                         }
-                    }
-                    if (listSearch.size == 0) {
-                        AlertDialog.Builder(this@MainActivity).setTitle("No information")
-                            .setMessage("The information you are looking for is not available")
-                            .setNegativeButton(
-                                "OK ",
-                                DialogInterface.OnClickListener { dialogInterface, i ->
-                                    dialogInterface.cancel()
-                                }).show()
-                    } else {
-                        mApdaper?.setList(listSearch)
                     }
                 }
                 return false
