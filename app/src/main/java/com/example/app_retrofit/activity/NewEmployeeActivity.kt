@@ -160,38 +160,19 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
     fun update(employeePost: EmployeePost) {
         viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
             if (it != null) {
-                Log.d("MainActivity", "update successfully")
-                Toast.makeText(
-                    this@NewEmployeeActivity,
-                    "update successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
                 finish()
             }
         })
-        viewModel.insertUpdate(employeePost)
+        viewModel.insertUpdate(employeePost, this)
     }
 
     fun insert(employeePost: EmployeePost) {
         viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
             if (it != null) {
-                Log.d("MainActivity", "save successfully")
-                Toast.makeText(
-                    this@NewEmployeeActivity,
-                    "save successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
                 finish()
             }
-            else{
-                Toast.makeText(
-                    this@NewEmployeeActivity,
-                    "save error",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         })
-        viewModel.insertUpdate(employeePost)
+        viewModel.insertUpdate(employeePost, this)
     }
 
 

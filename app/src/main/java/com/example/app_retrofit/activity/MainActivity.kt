@@ -67,13 +67,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             if (it != null) {
                 list = it.contacts as MutableList<Contact>
                 mApdaper?.setList(list!!)
-
-            } else {
-
-                Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
             }
         })
-        mDialog?.let { viewModel.getAll(it) }
+        mDialog?.let { viewModel.getAll(it, this) }
 
     }
 

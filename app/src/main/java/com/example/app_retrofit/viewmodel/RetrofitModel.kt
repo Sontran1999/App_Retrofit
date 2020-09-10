@@ -37,39 +37,34 @@ class RetrofitModel(application: Application) : ViewModel() {
         return employee
     }
 
-    fun getAll(mDialog: ProgressDialog) {
+    fun getAll(mDialog: ProgressDialog, context: Context) {
         mService?.getAll()?.enqueue(object : retrofit2.Callback<Employee> {
             override fun onFailure(call: retrofit2.Call<Employee>, t: Throwable) {
                 Log.d("MainActivity", "error loading from API")
-//                Toast.makeText(mContext, "error loading from API", Toast.LENGTH_SHORT)
-//                    .show()
-//                mDialog?.dismiss()
                 employee.postValue(null)
                 mDialog?.dismiss()
+                Toast.makeText(context, "error loading from API", Toast.LENGTH_SHORT).show()
             }
 
             override fun onResponse(call: retrofit2.Call<Employee>, response: Response<Employee>) {
                 if (response.isSuccessful) {
-//                    list = response.body()?.contacts as MutableList<Contact>
-//                    mApdaper?.setList(list!!)
                     Log.d("MainActivity", "employees loaded from API")
-//                    mDialog?.dismiss()
                     employee.postValue(response.body())
                     mDialog?.dismiss()
                 } else {
+                    Log.d("MainActivity", response.message() + response.code())
                     employee.postValue(null)
                 }
             }
         })
     }
 
-    fun insertUpdate(employeePost: EmployeePost) {
+    fun insertUpdate(employeePost: EmployeePost, context: Context) {
         mService?.insert(employeePost)
             ?.enqueue(object : retrofit2.Callback<Contact> {
                 override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
-//                    Log.d("MainActivity", "error");
-//                    Toast.makeText(this@NewEmployeeActivity, "save error", Toast.LENGTH_SHORT)
-//                        .show()
+                    Log.d("MainActivity", "error")
+                    Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
                     employeePostLiveData.postValue(null)
                 }
 
@@ -78,17 +73,15 @@ class RetrofitModel(application: Application) : ViewModel() {
                     response: Response<Contact>
                 ) {
                     if (response.isSuccessful) {
-//                        Log.d("MainActivity", "save successfully")
-//                        Toast.makeText(
-//                            this@NewEmployeeActivity,
-//                            "save successfully",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        finish()
                         employeePostLiveData.postValue(employeePost)
-                    } else
-//                        Log.d("MainActivity", response.message() + response.code())
+                        Log.d("MainActivity", "successfully")
+                        Toast.makeText(context, "successfully", Toast.LENGTH_SHORT).show()
+                    } else{
                         employeePostLiveData.postValue(null)
+                        Log.d("MainActivity", response.message() + response.code())
+                    }
+
+
                 }
             })
     }
@@ -119,6 +112,7 @@ class RetrofitModel(application: Application) : ViewModel() {
                                     .show()
                             } else {
                                 contactLiveData.postValue(null)
+                                Log.d("MainActivity", response.message() + response.code())
                             }
                         }
                     })
