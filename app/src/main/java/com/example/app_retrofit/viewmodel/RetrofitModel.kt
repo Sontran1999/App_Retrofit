@@ -1,30 +1,31 @@
-package com.example.app_retrofit.ViewModel
+package com.example.app_retrofit.viewmodel
 
 import android.app.Application
 import android.app.ProgressDialog
 import android.content.Context
-import android.graphics.ColorSpace
+import android.content.DialogInterface
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.app_retrofit.Data.Model.Contact
-import com.example.app_retrofit.Data.Model.Employee
-import com.example.app_retrofit.Data.Model.EmployeePost
-import com.example.app_retrofit.Data.Remote.APIService
-import com.example.app_retrofit.Data.Remote.ApiUtils
-import com.example.app_retrofit.MainActivity
+import com.example.app_retrofit.data.model.Contact
+import com.example.app_retrofit.data.model.Employee
+import com.example.app_retrofit.data.model.EmployeePost
+import com.example.app_retrofit.data.remote.APIService
+import com.example.app_retrofit.data.remote.ApiUtils
 import retrofit2.Response
 
 class RetrofitModel( application: Application) : ViewModel() {
     var employee: MutableLiveData<Employee>
     var employeePostLiveData: MutableLiveData<EmployeePost>
     var mService: APIService? = null
-
+    var contactLiveData: MutableLiveData<Contact>
     init {
         employee = MutableLiveData()
         employeePostLiveData = MutableLiveData()
+        contactLiveData = MutableLiveData()
         mService = ApiUtils().getAPIService()
     }
 
@@ -58,11 +59,11 @@ class RetrofitModel( application: Application) : ViewModel() {
         })
     }
 
-    fun insert(employeePost: EmployeePost){
+    fun insertUpdate(employeePost: EmployeePost){
         mService?.insert(employeePost)
             ?.enqueue(object : retrofit2.Callback<Contact> {
                 override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
-//                    Log.d("MainActivity", "error");
+                    Log.d("MainActivity", "error")
 //                    Toast.makeText(this@NewEmployeeActivity, "save error", Toast.LENGTH_SHORT)
 //                        .show()
                     employeePostLiveData.postValue(null)
@@ -73,7 +74,7 @@ class RetrofitModel( application: Application) : ViewModel() {
                     response: Response<Contact>
                 ) {
                     if (response.isSuccessful) {
-//                        Log.d("MainActivity", "save successfully")
+                        Log.d("MainActivity", "save successfully")
 //                        Toast.makeText(
 //                            this@NewEmployeeActivity,
 //                            "save successfully",
@@ -88,12 +89,47 @@ class RetrofitModel( application: Application) : ViewModel() {
             })
     }
 
-    fun update(){
 
-    }
 
-    fun delete(){
+    fun delete(contact: Contact, context: Context) {
+        var alertDialog = AlertDialog.Builder(context)
+        alertDialog.setMessage("Are you sure you want to delete")
+        alertDialog.setPositiveButton(
+            "OK",
+            DialogInterface.OnClickListener { dialogInterface, i ->
+                mService?.delete(contact.contactId)
+                    ?.enqueue(object : retrofit2.Callback<Unit> {
+                        override fun onFailure(call: retrofit2.Call<Unit>, t: Throwable) {
+                            Log.d("MainActivity", "error");
+                            Toast.makeText(context, "delete error", Toast.LENGTH_SHORT).show()
+                            contactLiveData.postValue(null)
+                        }
 
+                        override fun onResponse(
+                            call: retrofit2.Call<Unit>,
+                            response: Response<Unit>
+                        ) {
+                            if (response.isSuccessful) {
+                                Log.d("MainActivity", "delete successfully")
+                                contactLiveData.postValue(contact)
+//                        load()
+                                Toast.makeText(context, "delete successfully", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                contactLiveData.postValue(null)
+                            }
+                        }
+                    })
+
+            }
+        )
+        alertDialog.setNegativeButton(
+            "Cancel ",
+            DialogInterface.OnClickListener { dialogInterface, i ->
+                dialogInterface.cancel()
+            })
+
+        alertDialog.show()
     }
 
     class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {

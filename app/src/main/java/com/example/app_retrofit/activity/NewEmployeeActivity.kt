@@ -1,4 +1,4 @@
-package com.example.app_retrofit
+package com.example.app_retrofit.activity
 
 import android.content.DialogInterface
 import android.content.Intent
@@ -12,22 +12,20 @@ import android.util.Base64
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.example.app_retrofit.Data.Model.Contact
-import com.example.app_retrofit.Data.Model.ContactPost
-import com.example.app_retrofit.Data.Model.CustomPost
-import com.example.app_retrofit.Data.Model.EmployeePost
-import com.example.app_retrofit.Data.Remote.APIService
-import com.example.app_retrofit.Data.Remote.ApiUtils
-import com.example.app_retrofit.ViewModel.RetrofitModel
+import com.example.app_retrofit.data.model.Contact
+import com.example.app_retrofit.data.model.ContactPost
+import com.example.app_retrofit.data.model.CustomPost
+import com.example.app_retrofit.data.model.EmployeePost
+import com.example.app_retrofit.data.remote.APIService
+import com.example.app_retrofit.data.remote.ApiUtils
+import com.example.app_retrofit.R
+import com.example.app_retrofit.viewmodel.RetrofitModel
 import kotlinx.android.synthetic.main.activity_new_employee.*
-import retrofit2.Response
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
@@ -35,7 +33,10 @@ import java.io.IOException
 class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
     var mService: APIService? = null
     val validateEmail: String = "[a-zA-Z0-9]+@[a-z]+\\.[a-z]+"
-
+    val viewModel: RetrofitModel by lazy {
+        ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
+            .get(RetrofitModel::class.java)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_employee)
@@ -157,37 +158,21 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
 
 
     fun update(employeePost: EmployeePost) {
-        mService?.insert(employeePost)
-            ?.enqueue(object : retrofit2.Callback<Contact> {
-                override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
-                    Log.d("MainActivity", "error");
-                    Toast.makeText(this@NewEmployeeActivity, "update error", Toast.LENGTH_SHORT)
-
-                }
-
-                override fun onResponse(
-                    call: retrofit2.Call<Contact>,
-                    response: Response<Contact>
-                ) {
-                    if (response.isSuccessful) {
-                        Log.d("MainActivity", "update successfully")
-                        Toast.makeText(
-                            this@NewEmployeeActivity,
-                            "update successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        finish()
-                    } else
-                        Log.d("MainActivity", response.message() + response.code())
-                }
-            })
-
+        viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
+            if (it != null) {
+                Log.d("MainActivity", "update successfully")
+                Toast.makeText(
+                    this@NewEmployeeActivity,
+                    "update successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        })
+        viewModel.insertUpdate(employeePost)
     }
 
     fun insert(employeePost: EmployeePost) {
-        val viewModel: RetrofitModel =
-            ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
-                .get(RetrofitModel::class.java)
         viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
             if (it != null) {
                 Log.d("MainActivity", "save successfully")
@@ -199,7 +184,7 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                 finish()
             }
         })
-        viewModel.insert(employeePost)
+        viewModel.insertUpdate(employeePost)
     }
 
 

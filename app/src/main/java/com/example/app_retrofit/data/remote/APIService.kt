@@ -1,7 +1,7 @@
-package com.example.app_retrofit.Data.Remote
+package com.example.app_retrofit.data.remote
 
 
-import com.example.app_retrofit.Data.Model.*
+import com.example.app_retrofit.data.model.*
 import retrofit2.http.*
 
 interface APIService {

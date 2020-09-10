@@ -1,4 +1,4 @@
-package com.example.app_retrofit.Data.Remote
+package com.example.app_retrofit.data.remote
 
 class ApiUtils {
 

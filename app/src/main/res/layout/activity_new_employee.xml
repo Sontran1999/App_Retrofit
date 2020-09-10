@@ -71,7 +71,7 @@
             android:padding="20dp" />
 
 
-        <com.example.app_retrofit.EditTextEmail
+        <com.example.app_retrofit.customView.EditTextEmail
             android:id="@+id/edt_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

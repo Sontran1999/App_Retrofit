@@ -1,4 +1,4 @@
-package com.example.app_retrofit.Data.Remote
+package com.example.app_retrofit.data.remote
 
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

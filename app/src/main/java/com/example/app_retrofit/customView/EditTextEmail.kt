@@ -1,4 +1,4 @@
-package com.example.app_retrofit
+package com.example.app_retrofit.customView
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -8,7 +8,7 @@ import android.text.TextWatcher
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.res.ResourcesCompat
-import kotlinx.android.synthetic.main.activity_new_employee.*
+import com.example.app_retrofit.R
 
 class EditTextEmail : AppCompatEditText {
     constructor(context: Context?) : super(context)
