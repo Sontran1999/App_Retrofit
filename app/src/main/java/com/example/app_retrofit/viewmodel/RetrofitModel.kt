@@ -4,6 +4,10 @@ import android.app.Application
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
+<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/viewmodel/RetrofitModel.kt
+=======
+import android.graphics.ColorSpace
+>>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/ViewModel/RetrofitModel.kt
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -20,6 +24,7 @@ import retrofit2.Response
 class RetrofitModel( application: Application) : ViewModel() {
     var employee: MutableLiveData<Employee>
     var employeePostLiveData: MutableLiveData<EmployeePost>
+    var contactLiveData: MutableLiveData<Contact>
     var mService: APIService? = null
     var contactLiveData: MutableLiveData<Contact>
     init {
@@ -36,7 +41,7 @@ class RetrofitModel( application: Application) : ViewModel() {
     fun getAll(mDialog: ProgressDialog) {
         mService?.getAll()?.enqueue(object : retrofit2.Callback<Employee> {
             override fun onFailure(call: retrofit2.Call<Employee>, t: Throwable) {
-//                Log.d("MainActivity", "error loading from API")
+                Log.d("MainActivity", "error loading from API")
 //                Toast.makeText(mContext, "error loading from API", Toast.LENGTH_SHORT)
 //                    .show()
 //                mDialog?.dismiss()
@@ -48,7 +53,7 @@ class RetrofitModel( application: Application) : ViewModel() {
                 if (response.isSuccessful) {
 //                    list = response.body()?.contacts as MutableList<Contact>
 //                    mApdaper?.setList(list!!)
-//                    Log.d("MainActivity", "employees loaded from API")
+                    Log.d("MainActivity", "employees loaded from API")
 //                    mDialog?.dismiss()
                     employee.postValue(response.body())
                     mDialog?.dismiss()
@@ -63,7 +68,11 @@ class RetrofitModel( application: Application) : ViewModel() {
         mService?.insert(employeePost)
             ?.enqueue(object : retrofit2.Callback<Contact> {
                 override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
+<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/viewmodel/RetrofitModel.kt
                     Log.d("MainActivity", "error")
+=======
+                    Log.d("MainActivity", "error");
+>>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/ViewModel/RetrofitModel.kt
 //                    Toast.makeText(this@NewEmployeeActivity, "save error", Toast.LENGTH_SHORT)
 //                        .show()
                     employeePostLiveData.postValue(null)
@@ -83,12 +92,43 @@ class RetrofitModel( application: Application) : ViewModel() {
 //                        finish()
                         employeePostLiveData.postValue(employeePost)
                     } else
-//                        Log.d("MainActivity", response.message() + response.code())
+                        Log.d("MainActivity", response.message() + response.code())
                         employeePostLiveData.postValue(null)
                 }
             })
     }
 
+<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/viewmodel/RetrofitModel.kt
+=======
+    fun update(employeePost: EmployeePost){
+        mService?.insert(employeePost)
+            ?.enqueue(object : retrofit2.Callback<Contact> {
+                override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
+                    Log.d("MainActivity", "error");
+//                    Toast.makeText(this@NewEmployeeActivity, "update error", Toast.LENGTH_SHORT)
+                    employeePostLiveData.postValue(null)
+
+                }
+
+                override fun onResponse(
+                    call: retrofit2.Call<Contact>,
+                    response: Response<Contact>
+                ) {
+                    if (response.isSuccessful) {
+                        Log.d("MainActivity", "update successfully")
+//                        Toast.makeText(
+//                            this@NewEmployeeActivity,
+//                            "update successfully",
+//                            Toast.LENGTH_SHORT
+//                        ).show()
+//                        finish()
+                        employeePostLiveData.postValue(employeePost)
+                    } else
+                        Log.d("MainActivity", response.message() + response.code())
+                    employeePostLiveData.postValue(null)
+                }
+            })
+>>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/ViewModel/RetrofitModel.kt
 
 
     fun delete(contact: Contact, context: Context) {
@@ -101,7 +141,11 @@ class RetrofitModel( application: Application) : ViewModel() {
                     ?.enqueue(object : retrofit2.Callback<Unit> {
                         override fun onFailure(call: retrofit2.Call<Unit>, t: Throwable) {
                             Log.d("MainActivity", "error");
+<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/viewmodel/RetrofitModel.kt
                             Toast.makeText(context, "delete error", Toast.LENGTH_SHORT).show()
+=======
+//                    Toast.makeText(mContext, "delete error", Toast.LENGTH_SHORT).show()
+>>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/ViewModel/RetrofitModel.kt
                             contactLiveData.postValue(null)
                         }
 
@@ -113,8 +157,13 @@ class RetrofitModel( application: Application) : ViewModel() {
                                 Log.d("MainActivity", "delete successfully")
                                 contactLiveData.postValue(contact)
 //                        load()
+<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/viewmodel/RetrofitModel.kt
                                 Toast.makeText(context, "delete successfully", Toast.LENGTH_SHORT)
                                     .show()
+=======
+//                        Toast.makeText(mContext, "delete successfully", Toast.LENGTH_SHORT)
+//                            .show()
+>>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/ViewModel/RetrofitModel.kt
                             } else {
                                 contactLiveData.postValue(null)
                             }
