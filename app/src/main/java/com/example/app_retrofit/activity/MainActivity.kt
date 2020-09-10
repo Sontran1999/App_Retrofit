@@ -33,10 +33,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
             .get(RetrofitModel::class.java)
     }
-<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/activity/MainActivity.kt
 
-=======
->>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/Activity/MainActivity.kt
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -58,13 +57,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         viewModel.contactLiveData.observe(this, Observer<Contact> {
             if (it != null) {
                 load()
-<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/activity/MainActivity.kt
-=======
-                Toast.makeText(this, "delete successfully", Toast.LENGTH_SHORT)
-                    .show()
-            } else {
-                Toast.makeText(this, "delete error", Toast.LENGTH_SHORT).show()
->>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/Activity/MainActivity.kt
             }
         })
         viewModel.delete(it,this)

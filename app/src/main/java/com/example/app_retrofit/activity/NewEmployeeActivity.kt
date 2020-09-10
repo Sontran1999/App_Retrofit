@@ -158,7 +158,6 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
 
 
     fun update(employeePost: EmployeePost) {
-<<<<<<< HEAD:app/src/main/java/com/example/app_retrofit/activity/NewEmployeeActivity.kt
         viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
             if (it != null) {
                 Log.d("MainActivity", "update successfully")
@@ -171,51 +170,6 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
             }
         })
         viewModel.insertUpdate(employeePost)
-=======
-//        val viewModel: RetrofitModel =
-//            ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
-//                .get(RetrofitModel::class.java)
-//        viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
-//            if (it != null) {
-//                Log.d("MainActivity", "update successfully")
-//                Toast.makeText(
-//                    this@NewEmployeeActivity,
-//                    "update successfully",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//                finish()
-//            }
-//        })
-//        viewModel.update(employeePost)
-
-        mService?.insert(employeePost)
-            ?.enqueue(object : retrofit2.Callback<Contact> {
-                override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
-                    Log.d("MainActivity", "error");
-                    Toast.makeText(this@NewEmployeeActivity, "update error", Toast.LENGTH_SHORT)
-//                    employeePostLiveData.postValue(null)
-
-                }
-
-                override fun onResponse(
-                    call: retrofit2.Call<Contact>,
-                    response: Response<Contact>
-                ) {
-                    if (response.isSuccessful) {
-                        Log.d("MainActivity", "update successfully")
-                        Toast.makeText(
-                            this@NewEmployeeActivity,
-                            "update successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        finish()
-//                        employeePostLiveData.postValue(employeePost)
-                    } else
-                        Log.d("MainActivity", response.message() + response.code())
-//                    employeePostLiveData.postValue(null)
-                }
-            })
->>>>>>> 3b5f79ff6ab57a9706de4fd98c968fd7605f1a25:app/src/main/java/com/example/app_retrofit/Activity/NewEmployeeActivity.kt
     }
 
     fun insert(employeePost: EmployeePost) {
