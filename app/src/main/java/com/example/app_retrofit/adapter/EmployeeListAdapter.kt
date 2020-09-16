@@ -18,7 +18,9 @@ import com.example.app_retrofit.activity.NewEmployeeActivity
 import com.example.app_retrofit.R
 
 
-class EmployeeListAdapter(private val onDelete: (Contact) -> Unit) :
+class EmployeeListAdapter(
+    private val onDelete: (Contact) -> Unit,
+    private val onClick: (Contact) -> Unit):
     RecyclerView.Adapter<EmployeeListAdapter.ViewHoder>(){
     var mContact: MutableList<Contact> = arrayListOf()
 
@@ -52,12 +54,7 @@ class EmployeeListAdapter(private val onDelete: (Contact) -> Unit) :
             it.context.startActivity(intent)
         }
         holder.edit.setOnClickListener{
-            var bundle: Bundle = Bundle()
-            bundle.putSerializable("object", mContact[position])
-            bundle.putInt("key2", 2)
-            val intent: Intent = Intent(it.context, NewEmployeeActivity::class.java)
-            intent.putExtra("data", bundle)
-            it.context.startActivity(intent)
+           onClick(mContact[position])
         }
         holder.delete.setOnClickListener{
             onDelete(mContact[position])

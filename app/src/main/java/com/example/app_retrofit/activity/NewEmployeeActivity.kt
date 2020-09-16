@@ -1,5 +1,6 @@
 package com.example.app_retrofit.activity
 
+import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
@@ -16,23 +17,21 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
-import com.example.app_retrofit.data.model.Contact
-import com.example.app_retrofit.data.model.ContactPost
-import com.example.app_retrofit.data.model.CustomPost
-import com.example.app_retrofit.data.model.EmployeePost
 import com.example.app_retrofit.data.remote.APIService
 import com.example.app_retrofit.data.remote.ApiUtils
 import com.example.app_retrofit.R
+import com.example.app_retrofit.data.model.*
 import com.example.app_retrofit.viewmodel.RetrofitModel
 import kotlinx.android.synthetic.main.activity_new_employee.*
+import retrofit2.Response
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 
 class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
     var mService: APIService? = null
-    val validateEmail: String = "[a-zA-Z0-9]+@[a-z]+\\.[a-z]+"
     val viewModel: RetrofitModel by lazy {
         ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
             .get(RetrofitModel::class.java)
@@ -75,7 +74,6 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-
     private fun choosePicture() {
         val pickPhoto = Intent(
             Intent.ACTION_PICK,
@@ -115,23 +113,30 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
         var email = edt_email.text.toString()
         var note = edt_note.text.toString()
         var image = viewModel.bitMapToString((imgPicture.drawable as BitmapDrawable).bitmap)
-         if (lname.equals("")) {
-            Toast.makeText(this, "Không được để trống last name", Toast.LENGTH_SHORT).show()
-        } else if (email.equals("")) {
-            Toast.makeText(this, "Không được để trống email", Toast.LENGTH_SHORT).show()
-        } else if (!email.matches(validateEmail.toRegex())) {
-            edt_email.error = "Email sai"
-        } else {
-            var contact = ContactPost(lname, email, CustomPost(image, note))
-            var employeePost = EmployeePost(contact)
-            var bundle = intent.getBundleExtra("data")
-            if (bundle != null) {
+        var contact = ContactPost(lname, email, CustomPost(image, note))
+        var employeePost = EmployeePost(contact)
+        viewModel.notification.observe(this, Observer<String>{
+            if(it != null){
+                Toast.makeText(this,it, Toast.LENGTH_SHORT).show()
+            }
+            else{
                 var alertDialog = AlertDialog.Builder(this)
-                alertDialog.setMessage("Are you sure you want to update information")
+                alertDialog.setMessage("Are you sure you want to save information")
                 alertDialog.setPositiveButton(
                     "OK",
                     DialogInterface.OnClickListener { dialogInterface, i ->
-                        insertUpdate(employeePost)
+                        viewModel.employeePostLiveData?.observe(this, Observer<EmployeePost> {
+                            if(it != null){
+                                val intent: Intent = Intent()
+                                setResult(Activity.RESULT_OK, intent)
+                                this.finish()
+                                Toast.makeText(this,"save successfully", Toast.LENGTH_SHORT).show()
+                            }
+                            else{
+                                Toast.makeText(this,"save error", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                        viewModel.Create(employeePost)
                     }
                 )
                 alertDialog.setNegativeButton(
@@ -141,21 +146,10 @@ class NewEmployeeActivity : AppCompatActivity(), View.OnClickListener {
                     })
 
                 alertDialog.show()
-
-            } else {
-                insertUpdate(employeePost)
-            }
-        }
-    }
-
-
-    fun insertUpdate(employeePost: EmployeePost) {
-        viewModel.employeePostLiveData.observe(this, Observer<EmployeePost> {
-            if (it != null) {
-                finish()
             }
         })
-        viewModel.insertUpdate(employeePost, this)
+        viewModel.check(employeePost)
     }
+
 
 }

@@ -15,5 +15,26 @@
         android:icon="@drawable/ic_baseline_refresh_24"
         app:showAsAction="always"
         tools:ignore="MenuTitle" />
+    <item
+        android:id="@+id/menu_sort"
+        android:icon="@drawable/ic_baseline_sort_24"
+        android:orderInCategory="101"
+        app:showAsAction="always"
+        tools:ignore="MenuTitle">
+        <menu>
+            <item
+                android:id="@+id/menu_sort1"
+                android:orderInCategory="101"
+                android:title="A -> Z"
+                app:showAsAction="never"
+                tools:ignore="MenuTitle" />
+            <item
+                android:id="@+id/menu_sort2"
+                android:orderInCategory="101"
+                android:title="Z -> A"
+                app:showAsAction="never"
+                tools:ignore="MenuTitle" />
+        </menu>
+    </item>
 
 </menu>

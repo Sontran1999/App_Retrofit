@@ -1,7 +1,6 @@
 package com.example.app_retrofit.viewmodel
 
 import android.app.Application
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Bitmap
@@ -9,6 +8,7 @@ import android.graphics.BitmapFactory
 
 
 import android.graphics.ColorSpace
+import android.os.Bundle
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
@@ -17,121 +17,81 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.app_demo.Adapter.EmployeeListAdapter
+import com.example.app_retrofit.activity.NewEmployeeActivity
 import com.example.app_retrofit.data.model.Contact
+import com.example.app_retrofit.data.model.ContactPost
 import com.example.app_retrofit.data.model.Employee
 import com.example.app_retrofit.data.model.EmployeePost
 import com.example.app_retrofit.data.remote.APIService
 import com.example.app_retrofit.data.remote.ApiUtils
+import kotlinx.android.synthetic.main.activity_new_employee.*
 import retrofit2.Response
 import java.io.ByteArrayOutputStream
 
 class RetrofitModel(application: Application) : ViewModel() {
-    var employee: MutableLiveData<Employee>
     var employeePostLiveData: MutableLiveData<EmployeePost>
-    var contactLiveData: MutableLiveData<Contact>
+    var listContact: MutableLiveData<List<Contact>>? = null
+    var notification: MutableLiveData<String>
     var mService: APIService? = null
+    val validateEmail: String = "[a-zA-Z0-9]+@[a-z]+\\.[a-z]+"
 
     init {
-        employee = MutableLiveData()
         employeePostLiveData = MutableLiveData()
-        contactLiveData = MutableLiveData()
+        listContact = MutableLiveData()
         mService = ApiUtils().getAPIService()
-
+        notification = MutableLiveData()
     }
 
 
-    fun getAll(mDialog: ProgressDialog, context: Context) {
-        mService?.getAll()?.enqueue(object : retrofit2.Callback<Employee> {
+    fun getAll() {
+        val call = mService?.getAll()
+//        mDialog?.setButton(
+//            "Cancel", DialogInterface.OnClickListener { dialogInterface, i ->
+//                call?.cancel()
+//            })
+
+        call?.enqueue(object : retrofit2.Callback<Employee> {
             override fun onFailure(call: retrofit2.Call<Employee>, t: Throwable) {
                 Log.d("MainActivity", "error loading from API")
-                employee.postValue(null)
-                mDialog?.dismiss()
-                Toast.makeText(context, "error loading from API", Toast.LENGTH_SHORT).show()
+                listContact?.postValue(null)
             }
 
             override fun onResponse(call: retrofit2.Call<Employee>, response: Response<Employee>) {
                 if (response.isSuccessful) {
                     Log.d("MainActivity", "employees loaded from API")
-                    employee.postValue(response.body())
-                    mDialog?.dismiss()
+                    listContact?.postValue(response.body()?.contacts)
                 } else {
                     Log.d("MainActivity", response.message() + response.code())
-                    employee.postValue(null)
+                    listContact?.postValue(null)
                 }
             }
         })
     }
 
-    fun insertUpdate(employeePost: EmployeePost, context: Context) {
-        mService?.insert(employeePost)
-            ?.enqueue(object : retrofit2.Callback<Contact> {
-                override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
+    fun delete(contact: Contact) {
+        mService?.delete(contact.contactId)
+            ?.enqueue(object : retrofit2.Callback<Unit> {
+                override fun onFailure(call: retrofit2.Call<Unit>, t: Throwable) {
                     Log.d("MainActivity", "error")
-                    Toast.makeText(context, "error", Toast.LENGTH_SHORT).show()
-                    employeePostLiveData.postValue(null)
+                    listContact?.postValue(null)
                 }
 
                 override fun onResponse(
-                    call: retrofit2.Call<Contact>,
-                    response: Response<Contact>
+                    call: retrofit2.Call<Unit>,
+                    response: Response<Unit>
                 ) {
                     if (response.isSuccessful) {
-                        employeePostLiveData.postValue(employeePost)
-                        Log.d("MainActivity", "successfully")
-                        Toast.makeText(context, "successfully", Toast.LENGTH_SHORT).show()
-                    } else{
-                        employeePostLiveData.postValue(null)
+                        Log.d("MainActivity", "delete successfully")
+                        getAll()
+                    } else {
+                        listContact?.postValue(null)
                         Log.d("MainActivity", response.message() + response.code())
                     }
-
-
                 }
             })
     }
 
-
-    fun delete(contact: Contact, context: Context) {
-        var alertDialog = AlertDialog.Builder(context)
-        alertDialog.setMessage("Are you sure you want to delete")
-        alertDialog.setPositiveButton(
-            "OK",
-            DialogInterface.OnClickListener { dialogInterface, i ->
-                mService?.delete(contact.contactId)
-                    ?.enqueue(object : retrofit2.Callback<Unit> {
-                        override fun onFailure(call: retrofit2.Call<Unit>, t: Throwable) {
-                            Log.d("MainActivity", "error")
-                            Toast.makeText(context, "delete error", Toast.LENGTH_SHORT).show()
-                            contactLiveData.postValue(null)
-                        }
-
-                        override fun onResponse(
-                            call: retrofit2.Call<Unit>,
-                            response: Response<Unit>
-                        ) {
-                            if (response.isSuccessful) {
-                                Log.d("MainActivity", "delete successfully")
-                                contactLiveData.postValue(contact)
-                                Toast.makeText(context, "delete successfully", Toast.LENGTH_SHORT)
-                                    .show()
-                            } else {
-                                contactLiveData.postValue(null)
-                                Log.d("MainActivity", response.message() + response.code())
-                            }
-                        }
-                    })
-
-            }
-        )
-        alertDialog.setNegativeButton(
-            "Cancel ",
-            DialogInterface.OnClickListener { dialogInterface, i ->
-                dialogInterface.cancel()
-            })
-
-        alertDialog.show()
-    }
-
-    fun search(query : String, list : MutableList<Contact>, context: Context, mApdaper : EmployeeListAdapter){
+    fun search(query: String, list: MutableList<Contact>) {
         var listSearch: MutableList<Contact> = mutableListOf()
         if (query != null) {
             list?.forEachIndexed { index, contact ->
@@ -142,17 +102,7 @@ class RetrofitModel(application: Application) : ViewModel() {
                     listSearch.add(contact)
                 }
             }
-            if (listSearch.size == 0) {
-                AlertDialog.Builder(context).setTitle("No information")
-                    .setMessage("The information you are looking for is not available")
-                    .setNegativeButton(
-                        "OK ",
-                        DialogInterface.OnClickListener { dialogInterface, i ->
-                            dialogInterface.cancel()
-                        }).show()
-            } else {
-                mApdaper?.setList(listSearch)
-            }
+            listContact?.postValue(listSearch)
         }
     }
 
@@ -172,6 +122,64 @@ class RetrofitModel(application: Application) : ViewModel() {
         val b = baos.toByteArray()
         return Base64.encodeToString(b, Base64.DEFAULT)
     }
+
+    fun sortASCByName() {
+        var sort = listContact?.value as MutableList<Contact>
+        sort.sortWith(compareBy { it.lastName?.toLowerCase() })
+        listContact?.postValue(sort)
+    }
+
+    fun sortDESCByName() {
+        var sort = listContact?.value as MutableList<Contact>
+        sort.sortWith(compareBy { it.lastName?.toLowerCase() })
+        listContact?.postValue(sort.reversed())
+    }
+
+    fun check(employeePost: EmployeePost) {
+        if (employeePost.contact?.lastName.equals("")) {
+            notification.postValue("Không được để trống name")
+        } else if (employeePost.contact?.email.equals("")) {
+            notification.postValue("Không được để trống email")
+        } else if (!employeePost.contact?.email?.matches(validateEmail.toRegex())!!) {
+            notification.postValue("Email sai")
+        }
+        else{
+            notification.postValue(null)
+        }
+    }
+
+    fun Create(employeePost: EmployeePost) {
+        val call = mService?.insert(employeePost)
+//        var mDialog = ProgressDialog(activity)
+//        mDialog?.setMessage("Loading Data...")
+//        mDialog?.setCancelable(false)
+////        mDialog?.setIndeterminate(true);
+//        mDialog?.setButton(
+//            "Cancel", DialogInterface.OnClickListener { dialogInterface, i ->
+//                dialogInterface.cancel()
+//                call?.cancel()
+//            })
+        call?.enqueue(object : retrofit2.Callback<Contact> {
+            override fun onFailure(call: retrofit2.Call<Contact>, t: Throwable) {
+                Log.d("MainActivity", "save error")
+                employeePostLiveData.postValue(null)
+            }
+
+            override fun onResponse(
+                call: retrofit2.Call<Contact>,
+                response: Response<Contact>
+            ) {
+                if (response.isSuccessful) {
+                    Log.d("MainActivity", "save successfully")
+                    employeePostLiveData.postValue(employeePost)
+                } else {
+                    Log.d("MainActivity", response.message() + response.code())
+                    employeePostLiveData.postValue(null)
+                }
+            }
+        })
+    }
+
     class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -184,3 +192,4 @@ class RetrofitModel(application: Application) : ViewModel() {
 
     }
 }
+

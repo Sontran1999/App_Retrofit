@@ -1,6 +1,7 @@
 package com.example.app_retrofit.activity
 
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.app_demo.Adapter.EmployeeListAdapter
 import com.example.app_retrofit.data.model.Contact
@@ -23,12 +25,15 @@ import com.example.app_retrofit.data.model.Employee
 import com.example.app_retrofit.R
 import com.example.app_retrofit.viewmodel.RetrofitModel
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.launch
+import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     var mApdaper: EmployeeListAdapter? = null
     var mDialog: ProgressDialog? = null
-    var list: MutableList<Contact>? = null
+    var list: MutableList<Contact> = mutableListOf()
+    val LAUNCH_SECOND_ACTIVITY = 1
     val viewModel: RetrofitModel by lazy {
         ViewModelProviders.of(this, RetrofitModel.ViewModelFactory(this.application))
             .get(RetrofitModel::class.java)
@@ -39,39 +44,71 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.setTitle("")
-        mApdaper = EmployeeListAdapter(onItemDelete)
+        mApdaper = EmployeeListAdapter(onItemDelete, onItemClick)
         recycler_employee.setHasFixedSize(true)
         recycler_employee.layoutManager = LinearLayoutManager(this)
         recycler_employee.adapter = mApdaper
         btn_new.setOnClickListener(this)
         replaceData()
-    }
-
-    override fun onResume() {
-        super.onResume()
         loadFeed()
     }
 
+
     private val onItemDelete: (Contact) -> Unit = {
-        viewModel.contactLiveData.observe(this, Observer<Contact> {
-            if (it != null) {
-                load()
+        var alertDialog = AlertDialog.Builder(this)
+        alertDialog.setMessage("Are you sure you want to delete")
+        alertDialog.setPositiveButton(
+            "OK",
+            DialogInterface.OnClickListener { dialogInterface, i ->
+                viewModel.delete(it)
+                viewModel.listContact?.observe(this, Observer<List<Contact>> {
+                    if (it != null) {
+                        Toast.makeText(this, "delete successfully", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    else{
+                        Toast.makeText(this, "delete error", Toast.LENGTH_SHORT).show()
+                    }
+                })
             }
-        })
-        viewModel.delete(it, this)
+        )
+        alertDialog.setNegativeButton(
+            "Cancel ",
+            DialogInterface.OnClickListener { dialogInterface, i ->
+                dialogInterface.cancel()
+            })
+        alertDialog.show()
+    }
+
+    private val onItemClick: (Contact) -> Unit = {
+        var bundle: Bundle = Bundle()
+        bundle.putSerializable("object", it)
+        bundle.putInt("key2", 2)
+        val intent: Intent = Intent(this, NewEmployeeActivity::class.java)
+        intent.putExtra("data", bundle)
+        startActivityForResult(intent, LAUNCH_SECOND_ACTIVITY)
+
     }
 
     fun replaceData() {
-        viewModel.employee.observe(this, Observer<Employee> {
-            list = it.contacts as MutableList<Contact>
-            mApdaper?.setList(list!!)
-
+        viewModel.listContact?.observe(this, Observer<List<Contact>> {
+            if (it != null) {
+                list = it as MutableList<Contact>
+                mApdaper?.setList(list)
+            }
         })
     }
 
     fun load() {
-        mDialog?.let { viewModel.getAll(it, this) }
-
+        viewModel.listContact?.observe(this, Observer<List<Contact>> {
+            if (it != null) {
+                mDialog?.dismiss()
+            } else {
+                mDialog?.dismiss()
+                Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
+            }
+        })
+        viewModel.getAll()
     }
 
     private fun loadFeed() {
@@ -117,7 +154,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.btn_new -> {
                 val intent: Intent = Intent(this, NewEmployeeActivity::class.java)
                 intent.putExtra("key1", 1)
-                startActivity(intent)
+                startActivityForResult(intent, LAUNCH_SECOND_ACTIVITY)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == LAUNCH_SECOND_ACTIVITY) {
+            if (resultCode == Activity.RESULT_OK) {
+                loadFeed()
             }
         }
     }
@@ -128,6 +174,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 loadFeed()
                 return true
             }
+            R.id.menu_sort1 -> {
+                 viewModel.sortASCByName()
+                return true
+            }
+            R.id.menu_sort2 -> {
+              viewModel.sortDESCByName()
+                return true
+            }
+
         }
         return super.onOptionsItemSelected(item)
     }
@@ -141,13 +196,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (query != null) {
-                    list?.let {
-                        mApdaper?.let { it1 ->
-                            viewModel.search(
-                                query, it, this@MainActivity,it1
-                            )
-                        }
-                    }
+                        viewModel.listContact?.observe(this@MainActivity, Observer<List<Contact>> {
+                            if (it.size == 0) {
+                                AlertDialog.Builder(this@MainActivity).setTitle("No information")
+                                    .setMessage("The information you are looking for is not available")
+                                    .setNegativeButton(
+                                        "OK ",
+                                        DialogInterface.OnClickListener { dialogInterface, i ->
+                                            dialogInterface.cancel()
+                                        }).show()
+                            }
+                        })
+                        viewModel.search(query, list)
                 }
                 return false
             }

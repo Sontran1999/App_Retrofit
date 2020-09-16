@@ -2,6 +2,7 @@ package com.example.app_retrofit.customView
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +10,7 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.res.ResourcesCompat
 import com.example.app_retrofit.R
+import kotlinx.android.synthetic.main.activity_new_employee.view.*
 
 class EditTextEmail : AppCompatEditText {
     constructor(context: Context?) : super(context)
@@ -49,9 +51,11 @@ class EditTextEmail : AppCompatEditText {
             override fun afterTextChanged(s: Editable) {
                 if (s.matches(validateEmail.toRegex())) {
                     showImage()
+                    edt_email.setTextColor(Color.BLACK)
                 }
                 else{
                     hideImage()
+                    edt_email.setTextColor(Color.RED)
 
                 }
             }
