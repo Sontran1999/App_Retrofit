@@ -121,7 +121,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 dialogInterface.cancel()
             })
         mDialog?.show()
-        if (viewModel.amIConnected(this)) {
+        if (amIConnected()) {
             mApdaper?.reset()
             load()
         } else {
@@ -130,6 +130,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+
+    private fun amIConnected(): Boolean {
+        val connectivityManager =
+            this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
 
 //    fun check() {
 //        val ret: Boolean = amIConnected()

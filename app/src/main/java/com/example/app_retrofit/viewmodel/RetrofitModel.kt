@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 
 
 import android.graphics.ColorSpace
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
@@ -178,6 +179,13 @@ class RetrofitModel(application: Application) : ViewModel() {
                 }
             }
         })
+    }
+
+     fun amIConnected(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
 
     class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
